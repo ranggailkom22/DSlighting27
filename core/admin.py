@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib import messages
 from django.utils.html import format_html
 from django.db.models import Sum, Count
 from django.utils import timezone
@@ -141,6 +142,51 @@ class PenyewaanAdmin(ActionMixin, admin.ModelAdmin):
     list_per_page = 20
     readonly_fields = ['total_harga', 'tanggal_dibuat']
     inlines = [DetailPenyewaanInline, TransaksiInline]
+
+    def save_model(self, request, obj, form, change):
+        """
+        Hook to restore stock when status changes to completed/cancelled
+        Physical stock system: stock is restored when order is completed or cancelled
+        """
+        if change:  # This is an update, not a creation
+            old_obj = Penyewaan.objects.get(pk=obj.pk)
+            old_status = old_obj.status
+            new_status = obj.status
+            
+            # If status changes from active (pending/confirmed) to inactive (completed/cancelled)
+            if old_status in ['pending', 'confirmed'] and new_status in ['completed', 'cancelled']:
+                detail = obj.detailpenyewaan_set.first()
+                if detail and obj.paket:
+                    obj.paket.stok += detail.jumlah
+                    obj.paket.save()
+                    self.message_user(
+                        request,
+                        f'Stok paket "{obj.paket.nama}" dikembalikan: +{detail.jumlah} unit (Total: {obj.paket.stok})',
+                        messages.SUCCESS
+                    )
+            
+            # If status changes from inactive (completed/cancelled) back to active (pending/confirmed)
+            elif old_status in ['completed', 'cancelled'] and new_status in ['pending', 'confirmed']:
+                detail = obj.detailpenyewaan_set.first()
+                if detail and obj.paket:
+                    if obj.paket.stok >= detail.jumlah:
+                        obj.paket.stok -= detail.jumlah
+                        obj.paket.save()
+                        self.message_user(
+                            request,
+                            f'Stok paket "{obj.paket.nama}" dikurangi: -{detail.jumlah} unit (Total: {obj.paket.stok})',
+                            messages.WARNING
+                        )
+                    else:
+                        self.message_user(
+                            request,
+                            f'Peringatan: Stok paket "{obj.paket.nama}" tidak mencukupi untuk mengaktifkan kembali pesanan ini!',
+                            messages.ERROR
+                        )
+                        # Prevent status change if stock insufficient
+                        obj.status = old_status
+        
+        super().save_model(request, obj, form, change)
 
     def status_badge(self, obj):
         color_map = {

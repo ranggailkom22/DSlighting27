@@ -11,6 +11,7 @@ def cancel_expired_pending_orders():
     Cancel pending orders that have not been paid within 2 hours
     Only cancel if there's no payment proof uploaded
     This releases the reserved stock for other customers
+    Physical stock system: stock is restored when order is cancelled
     """
     # Get pending orders older than 2 hours that don't have payment proof
     expiry_time = timezone.now() - timedelta(hours=2)
@@ -24,6 +25,12 @@ def cancel_expired_pending_orders():
     
     cancelled_count = 0
     for order in expired_orders:
+        # Restore physical stock before cancelling
+        detail = order.detailpenyewaan_set.first()
+        if detail and order.paket:
+            order.paket.stok += detail.jumlah
+            order.paket.save()
+        
         # Update order status to cancelled
         order.status = 'cancelled'
         order.save()
@@ -33,7 +40,7 @@ def cancel_expired_pending_orders():
             user=order.pelanggan.user,
             jenis='warning',
             judul='Pesanan Dibatalkan',
-            pesan=f'Pesanan #{order.id} dibatalkan karena tidak ada pembayaran dalam 2 jam. Stok telah dilepas untuk pelanggan lain.'
+            pesan=f'Pesanan #{order.id} dibatalkan karena tidak ada pembayaran dalam 2 jam. Stok telah dikembalikan ke gudang.'
         )
         
         cancelled_count += 1
