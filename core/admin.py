@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.auth.models import Group
 from django.utils.html import format_html
 from django.db.models import Sum, Count
 from django.utils import timezone
@@ -136,7 +137,7 @@ class PaketAdmin(ActionMixin, admin.ModelAdmin):
 
 
 class PenyewaanAdmin(ActionMixin, admin.ModelAdmin):
-    list_display = ['pelanggan', 'paket', 'tgl_pasang', 'status_badge', 'status_pembayaran', 'whatsapp_button', 'aksi']
+    list_display = ['pelanggan', 'foto_paket', 'paket', 'tgl_pasang', 'status_badge', 'status_pembayaran', 'whatsapp_button', 'aksi']
     list_filter = ['status', 'tgl_pasang', 'tanggal_dibuat']
     search_fields = ['pelanggan__nama', 'paket__nama']
     list_per_page = 20
@@ -187,6 +188,16 @@ class PenyewaanAdmin(ActionMixin, admin.ModelAdmin):
                         obj.status = old_status
         
         super().save_model(request, obj, form, change)
+
+    def foto_paket(self, obj):
+        """Display package thumbnail in list view"""
+        if obj.paket and obj.paket.gambar:
+            return format_html(
+                '<img src="{}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" />',
+                obj.paket.gambar.url
+            )
+        return format_html('<span class="text-muted" style="font-size: 0.85em;"><i class="fas fa-image"></i> No Image</span>')
+    foto_paket.short_description = 'Foto'
 
     def status_badge(self, obj):
         color_map = {
@@ -334,9 +345,26 @@ class NotifikasiAdmin(ActionMixin, admin.ModelAdmin):
 admin.site.register(Pelanggan, PelangganAdmin)
 admin.site.register(Paket, PaketAdmin)
 admin.site.register(Penyewaan, PenyewaanAdmin)
-admin.site.register(DetailPenyewaan, DetailPenyewaanAdmin)
+# DetailPenyewaan is handled as inline in Penyewaan - no standalone registration needed
 admin.site.register(Transaksi, TransaksiAdmin)
 admin.site.register(Notifikasi, NotifikasiAdmin)
+
+
+# ============================================================================
+# SIDEBAR CLEANUP: Hide unnecessary admin models
+# ============================================================================
+
+# 1. Hide Group model from Auth section (rarely used in this project)
+try:
+    admin.site.unregister(Group)
+except admin.sites.NotRegistered:
+    pass  # Already unregistered or never registered
+
+# 2. Hide DetailPenyewaan model (already handled as inline in Penyewaan)
+try:
+    admin.site.unregister(DetailPenyewaan)
+except admin.sites.NotRegistered:
+    pass  # Already unregistered or never registered
 
 
 # Custom admin URLs

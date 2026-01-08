@@ -168,3 +168,8 @@ class Notifikasi(models.Model):
             models.Index(fields=['sudah_dibaca']),
             models.Index(fields=['tanggal_dibuat']),
         ]
+
+
+
+
+
