@@ -1,0 +1,671 @@
+{% load static %}
+{% load humanize %}
+{% load dict_extras %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - DSLighting27</title>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --red-grad: linear-gradient(135deg, #ff416c, #ff4b2b);
+            --cyan-grad: linear-gradient(135deg, #22d3ee, #0891b2);
+            --gold-grad: linear-gradient(135deg, #eab308, #a16207);
+            --dark-grad: linear-gradient(135deg, #1e293b, #0f172a);
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .sidebar {
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--glass-border);
+            min-height: calc(100vh - 70px);
+        }
+
+        .dashboard-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-dikonfirmasi {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-selesai {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-belum-bayar {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-menunggu-verifikasi {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .status-lunas {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-gagal {
+            background: #fecaca;
+            color: #991b1b;
+        }
+
+        .btn-pay {
+            background: var(--cyan-grad);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            animation: blink-glow 3s infinite;
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 211, 238, 0.4);
+        }
+
+        .btn-detail {
+            background: var(--gold-grad);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-detail:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(234, 179, 8, 0.4);
+        }
+
+        .section-padding {
+            padding: 30px 0;
+        }
+
+        @keyframes blink-glow {
+            0% { box-shadow: 0 0 5px rgba(34, 211, 238, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(34, 211, 238, 0.3); }
+        }
+
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .table-responsive {
+            border-radius: 16px;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .table-dark {
+            background-color: #1e293b; /* Deep Charcoal */
+        }
+
+        .table-dark th {
+            background-color: rgba(15, 23, 42, 0.8);
+            color: #e2e8f0;
+        }
+
+        .table-dark td {
+            border-color: var(--glass-border);
+        }
+
+        /* Notification Styles */
+        .notification-dropdown {
+            min-width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .notification-item:hover {
+            background-color: rgba(30, 41, 59, 0.5);
+        }
+
+        .notification-item.unread {
+            background-color: rgba(34, 211, 238, 0.1);
+        }
+
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .notification-time {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .notification-badge {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .table-responsive {
+                font-size: 0.85rem;
+            }
+            
+            .btn-pay, .btn-detail {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'images/logo.jpg' %}" alt="Logo" width="40" height="40" class="rounded-circle me-2">
+                DSLighting27
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown me-3">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            {% if unread_notifications_count > 0 %}
+                                <span class="badge bg-danger">{{ unread_notifications_count }}</span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                            <li class="notification-header">
+                                <h6 class="dropdown-header">Notifikasi</h6>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <!-- Notifications will be loaded here dynamically -->
+                            <li class="text-center p-2">
+                                <a href="#" id="load-notifications" class="text-decoration-none">Lihat Semua</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> {{ user.first_name|default:user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="/">Beranda</a></li>
+                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#manageAkunModal">
+                                Manage Akun
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-lg-2 d-none d-lg-block sidebar p-4">
+                <ul class="nav flex-column">
+                    <li class="nav-item mb-3">
+                        <a class="nav-link active text-white fw-bold" href="{% url 'customer_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a class="nav-link text-light" href="/">
+                            <i class="fas fa-home me-2"></i> Beranda
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a class="nav-link text-light" href="#penyewaan">
+                            <i class="fas fa-calendar-check me-2"></i> Penyewaan Saya
+                        </a>
+                    </li>
+                    <li class="nav-item mb-3">
+                        <a class="nav-link text-light" href="#" data-bs-toggle="modal" data-bs-target="#manageAkunModal">
+                            <i class="fas fa-user-cog me-2"></i> Manage Akun
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-10 col-12">
+                <div class="section-padding">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="fw-bold">Dashboard Pelanggan</h2>
+                        <p class="text-muted mb-0">Selamat datang, {{ user.first_name|default:user.username }}!</p>
+                    </div>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Penyewaan Section -->
+                    <div class="mb-5" id="penyewaan">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0">Riwayat Penyewaan</h4>
+                            <a href="#" id="toggle-notifications" class="btn btn-sm btn-outline-light">
+                                <i class="fas fa-bell me-1"></i> Notifikasi
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="badge bg-danger">{{ unread_notifications_count }}</span>
+                                {% endif %}
+                            </a>
+                        </div>
+                        
+                        <!-- Notifications Panel -->
+                        <div id="notifications-panel" class="dashboard-card p-4 mb-4" style="display: none;">
+                            <h5 class="mb-4">Notifikasi Terbaru</h5>
+                            <div id="notifications-list">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                        </div>
+                        
+                        {% if penyewaan_list %}
+                            <div class="table-responsive">
+                                <table class="table table-dark table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">#</th>
+                                            <th scope="col">Paket</th>
+                                            <th scope="col">Tanggal Pasang</th>
+                                            <th scope="col">Total Harga</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for penyewaan in penyewaan_list %}
+                                        <tr>
+                                            <th scope="row">{{ penyewaan.id }}</th>
+                                            <td>{{ penyewaan.paket.nama }}</td>
+                                            <td>{{ penyewaan.tgl_pasang|date:"d M Y" }}</td>
+                                            <td>Rp {{ penyewaan.total_harga|intcomma }}</td>
+                                            <td>
+                                                {% if transaksi_dict|get_item:penyewaan.id %}
+                                                    {% with transaksi=transaksi_dict|get_item:penyewaan.id %}
+                                                        {% if transaksi.bukti_bayar %}
+                                                            {% if transaksi.status == 'paid' %}
+                                                                <span class="status-badge status-menunggu-verifikasi">Menunggu Verifikasi</span>
+                                                            {% elif transaksi.status == 'confirmed' %}
+                                                                <span class="status-badge status-lunas">Lunas</span>
+                                                            {% elif transaksi.status == 'failed' %}
+                                                                <span class="status-badge status-gagal">Gagal</span>
+                                                            {% endif %}
+                                                        {% else %}
+                                                            <span class="status-badge status-belum-bayar">Belum Bayar</span>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% else %}
+                                                    {% if penyewaan.status == 'pending' %}
+                                                        <span class="status-badge status-pending">Pending</span>
+                                                    {% elif penyewaan.status == 'confirmed' %}
+                                                        <span class="status-badge status-dikonfirmasi">Dikonfirmasi</span>
+                                                    {% elif penyewaan.status == 'completed' %}
+                                                        <span class="status-badge status-selesai">Selesai</span>
+                                                    {% else %}
+                                                        <span class="status-badge bg-secondary">{{ penyewaan.get_status_display }}</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-detail mb-2" data-bs-toggle="modal" data-bs-target="#detailModal{{ penyewaan.id }}">
+                                                    Detail
+                                                </button>
+                                                {% if transaksi_dict|get_item:penyewaan.id %}
+                                                    {% with transaksi=transaksi_dict|get_item:penyewaan.id %}
+                                                        {% if not transaksi.bukti_bayar %}
+                                                            <a href="{% url 'upload_payment' penyewaan.id %}" class="btn btn-pay">
+                                                                Bayar
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endwith %}
+                                                {% else %}
+                                                    {% if penyewaan.status == 'pending' %}
+                                                        <a href="{% url 'upload_payment' penyewaan.id %}" class="btn btn-pay">
+                                                            Bayar
+                                                        </a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-calendar-times fa-3x mb-3 text-muted"></i>
+                                <p class="lead">Anda belum memiliki riwayat penyewaan.</p>
+                                <a href="/" class="btn btn-primary">Sewa Sekarang</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Modals -->
+    {% for penyewaan in penyewaan_list %}
+    <div class="modal fade" id="detailModal{{ penyewaan.id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ penyewaan.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel{{ penyewaan.id }}">Detail Penyewaan #{{ penyewaan.id }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <h6>Informasi Paket</h6>
+                        <div class="detail-item">
+                            <span>Nama Paket:</span>
+                            <strong>{{ penyewaan.paket.nama }}</strong>
+                        </div>
+                        <div class="detail-item">
+                            <span>Jumlah:</span>
+                            <strong>{{ penyewaan.detailpenyewaan_set.first.jumlah }}</strong>
+                        </div>
+                        <div class="detail-item">
+                            <span>Harga Satuan:</span>
+                            <strong>Rp {{ penyewaan.detailpenyewaan_set.first.harga_satuan|intcomma }}</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Informasi Jadwal</h6>
+                        <div class="detail-item">
+                            <span>Tanggal Pasang:</span>
+                            <strong>{{ penyewaan.tgl_pasang|date:"d M Y" }}</strong>
+                        </div>
+                        <div class="detail-item">
+                            <span>Tanggal Kembali:</span>
+                            <strong>{{ penyewaan.tgl_kembali|date:"d M Y" }}</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Rincian Biaya</h6>
+                        <div class="detail-item">
+                            <span>Subtotal:</span>
+                            <strong>Rp {{ penyewaan.detailpenyewaan_set.first.subtotal|intcomma }}</strong>
+                        </div>
+                        <div class="detail-item">
+                            <span>Ongkos Kirim:</span>
+                            <strong>Rp {{ penyewaan.ongkos_kirim|intcomma }}</strong>
+                        </div>
+                        <div class="detail-item">
+                            <span><strong>Total Harga:</strong></span>
+                            <strong class="text-success">Rp {{ penyewaan.total_harga|intcomma }}</strong>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Status</h6>
+                        <div class="detail-item">
+                            <span>Status Penyewaan:</span>
+                            <strong>
+                                {% if penyewaan.status == 'pending' %}
+                                    Pending
+                                {% elif penyewaan.status == 'confirmed' %}
+                                    Dikonfirmasi
+                                {% elif penyewaan.status == 'completed' %}
+                                    Selesai
+                                {% else %}
+                                    {{ penyewaan.get_status_display }}
+                                {% endif %}
+                            </strong>
+                        </div>
+                        {% if transaksi_dict|get_item:penyewaan.id %}
+                            {% with transaksi=transaksi_dict|get_item:penyewaan.id %}
+                                <div class="detail-item">
+                                    <span>Status Pembayaran:</span>
+                                    <strong>
+                                        {% if transaksi.bukti_bayar %}
+                                            {% if transaksi.status == 'paid' %}
+                                                Menunggu Verifikasi
+                                            {% elif transaksi.status == 'confirmed' %}
+                                                Lunas
+                                            {% elif transaksi.status == 'failed' %}
+                                                Gagal
+                                            {% endif %}
+                                        {% else %}
+                                            Belum Bayar
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Manage Akun Modal -->
+    <div class="modal fade" id="manageAkunModal" tabindex="-1" aria-labelledby="manageAkunModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark text-light">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manageAkunModalLabel">Manage Akun</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="namaLengkap" class="form-label">Nama Lengkap</label>
+                            <input type="text" class="form-control bg-secondary border-0 text-light" id="namaLengkap" value="{{ user.first_name }} {{ user.last_name }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control bg-secondary border-0 text-light" id="username" value="{{ user.username }}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control bg-secondary border-0 text-light" id="email" value="{{ user.email }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="telepon" class="form-label">Nomor Telepon</label>
+                            <input type="tel" class="form-control bg-secondary border-0 text-light" id="telepon" value="{{ user.pelanggan.nomor_telepon }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="alamat" class="form-label">Alamat</label>
+                            <textarea class="form-control bg-secondary border-0 text-light" id="alamat" rows="3">{{ user.pelanggan.alamat }}</textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-primary" disabled>Simpan Perubahan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2025 DSLighting27. All Rights Reserved.</p>
+                    <p class="mb-0">Nunkurus Jalan dusun 2 Padang Beringin, Kecamatan Kupang Timur, Kabupaten Kupang, Provinsi Nusa Tenggara Timur</p>
+                    <p class="mb-0">WA: +62 822-3689-1009 | IG: DS LIGHTING 27 🔥</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Toggle notifications panel
+        document.getElementById('toggle-notifications').addEventListener('click', function(e) {
+            e.preventDefault();
+            const panel = document.getElementById('notifications-panel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                loadNotifications();
+            } else {
+                panel.style.display = 'none';
+            }
+        });
+
+        // Load notifications
+        function loadNotifications() {
+            fetch('/api/notifications/')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('notifications-list');
+                    if (data.notifications.length > 0) {
+                        let html = '';
+                        data.notifications.forEach(notification => {
+                            const badgeClass = {
+                                'info': 'bg-info',
+                                'warning': 'bg-warning',
+                                'danger': 'bg-danger',
+                                'success': 'bg-success'
+                            }[notification.jenis] || 'bg-secondary';
+                            
+                            html += `
+                                <div class="notification-item ${!notification.sudah_dibaca ? 'unread' : ''}" 
+                                     data-id="${notification.id}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <div class="notification-title">${notification.judul}</div>
+                                            <div class="notification-message">${notification.pesan}</div>
+                                        </div>
+                                        <span class="badge ${badgeClass} notification-badge">${notification.jenis}</span>
+                                    </div>
+                                    <div class="notification-time text-end mt-2">
+                                        ${new Date(notification.tanggal_dibuat).toLocaleDateString('id-ID')}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = html;
+                        
+                        // Add click handlers to mark as read
+                        document.querySelectorAll('.notification-item').forEach(item => {
+                            item.addEventListener('click', function() {
+                                const id = this.getAttribute('data-id');
+                                markAsRead(id);
+                                this.classList.remove('unread');
+                            });
+                        });
+                    } else {
+                        container.innerHTML = '<p class="text-center text-muted">Tidak ada notifikasi</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading notifications:', error);
+                });
+        }
+
+        // Mark notification as read
+        function markAsRead(id) {
+            // Get CSRF token from cookie
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            fetch(`/api/notifications/${id}/mark-as-read/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Update badge count
+                const badge = document.querySelector('.badge.bg-danger');
+                if (badge) {
+                    const count = parseInt(badge.textContent);
+                    if (count > 1) {
+                        badge.textContent = count - 1;
+                    } else {
+                        badge.remove();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error marking as read:', error);
+            });
+        }
+
+        // Load notifications when dropdown is opened
+        document.querySelector('[data-bs-toggle="dropdown"]').addEventListener('click', function() {
+            // This would load dropdown notifications
+        });
+    </script>
+</body>
+</html>

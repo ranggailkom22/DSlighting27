@@ -1,0 +1,619 @@
+{% load static %}
+{% load humanize %}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSLighting27 - Solusi Pencahayaan Industrial Terbaik</title>
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --red-grad: linear-gradient(135deg, #ff416c, #ff4b2b);
+            --cyan-grad: linear-gradient(135deg, #22d3ee, #0891b2);
+            --gold-grad: linear-gradient(135deg, #eab308, #a16207);
+            --dark-grad: linear-gradient(135deg, #1e293b, #0f172a);
+        }
+
+        body {
+            font-family: 'Josefin Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f1f5f9;
+        }
+
+        .navbar {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .hero-section {
+            background: url('{% static "images/hero/1.jpg" %}') center/cover no-repeat;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        .hero-overlay {
+            background: rgba(15, 23, 42, 0.7);
+            min-height: 100vh;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .section-padding {
+            padding: 100px 0;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(34, 211, 238, 0.3);
+        }
+
+        .package-card {
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .package-card:hover {
+            transform: scale(1.02);
+        }
+
+        .package-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+        .btn-glow {
+            animation: blink-glow 3s infinite;
+        }
+
+        @keyframes blink-glow {
+            0% { box-shadow: 0 0 5px rgba(34, 211, 238, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(34, 211, 238, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(34, 211, 238, 0.3); }
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+        }
+
+        .gallery-item img {
+            transition: transform 0.3s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item:hover img {
+            transform: scale(1.1);
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--glass-bg);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            opacity: 1;
+        }
+
+        .contact-card {
+            background: var(--dark-grad);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .footer {
+            background: rgba(15, 23, 42, 0.9);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--cyan-grad);
+            transform: translateY(-3px);
+        }
+
+        .modal-content {
+            background: rgba(30, 41, 59, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: #f1f5f9;
+        }
+
+        .modal-header {
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--glass-border);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .section-padding {
+                padding: 50px 0;
+            }
+            
+            .hero-section {
+                min-height: 80vh;
+            }
+            
+            .package-image {
+                height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="{% static 'images/logo.jpg' %}" alt="Logo" width="40" height="40" class="rounded-circle me-2">
+                DSLighting27
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i> {{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="{% url 'customer_dashboard' %}">Dashboard Saya</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+                            </ul>
+                        </li>
+                        {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link btn btn-sm" style="background: var(--cyan-grad); color: white;" href="{% url 'register' %}">Register</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="hero-overlay d-flex align-items-center">
+            <div class="container hero-content">
+                <div class="row justify-content-center text-center">
+                    <div class="col-lg-8">
+                        <h1 class="display-3 fw-bold mb-4">Solusi Pencahayaan Industrial Terbaik</h1>
+                        <p class="lead mb-5">Memberikan penerangan berkualitas tinggi untuk kebutuhan industri dan komersial Anda dengan desain modern dan teknologi terkini.</p>
+                        <a href="#katalog" class="btn btn-lg px-5 py-3" style="background: var(--cyan-grad); color: white; border: none;" onclick="scrollToSection('katalog')">
+                            Pesan Sekarang
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section-padding" id="about">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-5 mb-5 mb-lg-0">
+                    <div class="text-center">
+                        <img src="{% static 'images/about.jpg' %}" alt="About" class="img-fluid rounded-circle" width="300">
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <h2 class="display-5 fw-bold mb-4">Tentang DSLighting27</h2>
+                    <p class="lead">Kami adalah perusahaan spesialis dalam menyediakan solusi pencahayaan industrial yang berkualitas tinggi untuk berbagai kebutuhan bisnis Anda.</p>
+                    <p>Komitmen kami adalah memberikan produk dan layanan terbaik dengan harga yang kompetitif. Dengan pengalaman bertahun-tahun di bidang pencahayaan industrial, kami memahami betapa pentingnya cahaya yang tepat untuk meningkatkan produktivitas dan keselamatan di tempat kerja.</p>
+                    <div class="row mt-4">
+                        <div class="col-md-4 mb-3">
+                            <div class="glass-card p-3 text-center">
+                                <i class="fas fa-lightbulb fa-2x text-warning mb-2"></i>
+                                <h5>Solusi Tepat</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="glass-card p-3 text-center">
+                                <i class="fas fa-tools fa-2x text-info mb-2"></i>
+                                <h5>Instalasi Profesional</h5>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="glass-card p-3 text-center">
+                                <i class="fas fa-headset fa-2x text-success mb-2"></i>
+                                <h5>Dukungan 24/7</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Katalog Paket Section -->
+    <section class="section-padding bg-dark" id="katalog">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-5 fw-bold">Katalog Paket Pencahayaan</h2>
+                    <p class="lead">Pilih paket pencahayaan yang sesuai dengan kebutuhan Anda</p>
+                </div>
+            </div>
+            <div class="row">
+                {% for paket in paket_list %}
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="glass-card package-card h-100">
+                        {% if paket.gambar %}
+                            <img src="{{ paket.gambar.url }}" alt="{{ paket.nama }}" class="package-image img-fluid">
+                        {% else %}
+                            <div class="package-image bg-secondary d-flex align-items-center justify-content-center">
+                                <i class="fas fa-image fa-3x text-muted"></i>
+                            </div>
+                        {% endif %}
+                        <div class="card-body d-flex flex-column" style="padding: 1.5rem;">
+                            <h4 class="card-title">{{ paket.nama }}</h4>
+                            <p class="card-text flex-grow-1">{{ paket.deskripsi|truncatewords:15 }}</p>
+                            <div class="mt-3">
+                                <p class="h5 text-warning">Rp {{ paket.harga|intcomma }}</p>
+                                <p class="text-muted">Stok: 
+                                    {% if paket.stok > 10 %}
+                                        <span class="text-success">{{ paket.stok }} unit</span>
+                                    {% elif paket.stok > 0 %}
+                                        <span class="text-warning">{{ paket.stok }} unit</span>
+                                    {% else %}
+                                        <span class="text-danger">Habis</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="mt-auto">
+                                <button class="btn w-100 mb-2" style="background: var(--gold-grad); color: white; border: none;" data-bs-toggle="modal" data-bs-target="#detailModal{{ paket.id }}">
+                                    Lihat Detail
+                                </button>
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'booking' paket.id %}" class="btn w-100 mt-2" style="background: var(--cyan-grad); color: white; border: none;">
+                                    Sewa Sekarang
+                                </a>
+                                {% else %}
+                                <a href="{% url 'login' %}" class="btn w-100 mt-2" style="background: var(--cyan-grad); color: white; border: none;">
+                                    Login untuk Sewa
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12 text-center">
+                    <p class="lead">Belum ada paket pencahayaan yang tersedia saat ini.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Gallery Section -->
+    <section class="section-padding">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-5 fw-bold">Galeri Instalasi</h2>
+                    <p class="lead">Lihat hasil instalasi pencahayaan kami di berbagai lokasi</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal1">
+                        <img src="{% static 'images/galeri/1.jpg' %}" alt="Gallery 1">
+                        <div class="gallery-overlay">
+                            <div class="text-center text-white">
+                                <i class="fas fa-search-plus fa-2x"></i>
+                                <p class="mt-2 mb-0">Click to Expand</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal2">
+                        <img src="{% static 'images/galeri/2.jpg' %}" alt="Gallery 2">
+                        <div class="gallery-overlay">
+                            <div class="text-center text-white">
+                                <i class="fas fa-search-plus fa-2x"></i>
+                                <p class="mt-2 mb-0">Click to Expand</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="gallery-item" data-bs-toggle="modal" data-bs-target="#imageModal3">
+                        <img src="{% static 'images/galeri/3.jpg' %}" alt="Gallery 3">
+                        <div class="gallery-overlay">
+                            <div class="text-center text-white">
+                                <i class="fas fa-search-plus fa-2x"></i>
+                                <p class="mt-2 mb-0">Click to Expand</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section-padding bg-dark" id="contact">
+        <div class="container">
+            <div class="row mb-5">
+                <div class="col-12 text-center">
+                    <h2 class="display-5 fw-bold">Hubungi Kami</h2>
+                    <p class="lead">Ada pertanyaan? Kami siap membantu Anda</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="contact-card p-4 h-100">
+                        <div class="text-center">
+                            <i class="fab fa-whatsapp fa-3x text-success mb-3"></i>
+                            <h4>WhatsApp</h4>
+                            <p class="mb-0">+62 822-3689-1009</p>
+                            <a href="https://wa.me/6282236891009" class="btn btn-success mt-3">
+                                <i class="fab fa-whatsapp me-1"></i> Chat Sekarang
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="contact-card p-4 h-100">
+                        <div class="text-center">
+                            <i class="fas fa-map-marker-alt fa-3x text-danger mb-3"></i>
+                            <h4>Alamat</h4>
+                            <p class="mb-0">Nunkurus Jalan dusun 2 Padang Beringin<br>Kecamatan Kupang Timur<br>Kabupaten Kupang<br>Provinsi Nusa Tenggara Timur</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="contact-card p-4 h-100">
+                        <div class="text-center">
+                            <i class="fas fa-envelope fa-3x text-primary mb-3"></i>
+                            <h4>Email</h4>
+                            <p class="mb-0">info@ds-lighting27.com</p>
+                            <a href="mailto:info@ds-lighting27.com" class="btn btn-primary mt-3">
+                                <i class="fas fa-envelope me-1"></i> Kirim Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4 mb-lg-0">
+                    <h4 class="mb-4">DSLighting27</h4>
+                    <p>Solusi pencahayaan industrial terbaik untuk kebutuhan bisnis Anda dengan desain modern dan teknologi terkini.</p>
+                    <div class="d-flex gap-3 mt-4">
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="https://wa.me/6282236891009" class="social-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-4">Navigasi</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/" class="text-decoration-none text-light">Beranda</a></li>
+                        <li class="mb-2"><a href="#about" class="text-decoration-none text-light">Tentang</a></li>
+                        <li class="mb-2"><a href="#katalog" class="text-decoration-none text-light">Katalog</a></li>
+                        <li class="mb-2"><a href="#contact" class="text-decoration-none text-light">Kontak</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
+                    <h5 class="mb-4">Layanan</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">Pencahayaan Pabrik</li>
+                        <li class="mb-2">Pencahayaan Gudang</li>
+                        <li class="mb-2">Pencahayaan Showroom</li>
+                        <li class="mb-2">Maintenance Berkala</li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-4">
+                    <h5 class="mb-4">Kontak</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-phone me-2"></i> +62 822-3689-1009</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2"></i> info@ds-lighting27.com</li>
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> Nunkurus Jalan dusun 2 Padang Beringin, Kecamatan Kupang Timur, Kabupaten Kupang, Provinsi Nusa Tenggara Timur</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-5" style="border-color: var(--glass-border);">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2025 DSLighting27. All Rights Reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Package Detail Modals -->
+    {% for paket in paket_list %}
+    <div class="modal fade" id="detailModal{{ paket.id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ paket.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="detailModalLabel{{ paket.id }}">{{ paket.nama }}</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            {% if paket.gambar %}
+                                <img src="{{ paket.gambar.url }}" alt="{{ paket.nama }}" class="img-fluid rounded">
+                            {% else %}
+                                <div class="bg-secondary d-flex align-items-center justify-content-center" style="height: 300px;">
+                                    <i class="fas fa-image fa-5x text-muted"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mt-4">
+                                <h5>Detail Harga</h5>
+                                <div class="d-flex justify-content-between border-bottom py-2">
+                                    <span>Harga per unit:</span>
+                                    <strong>Rp {{ paket.harga|intcomma }}</strong>
+                                </div>
+                                <div class="d-flex justify-content-between border-bottom py-2">
+                                    <span class="text-white">Stok Tersedia:</span>
+                                    <strong>
+                                        {% if paket.stok > 10 %}
+                                            <span style="color: #22d3ee;">{{ paket.stok }} unit</span>
+                                        {% elif paket.stok > 0 %}
+                                            <span class="text-warning">{{ paket.stok }} unit</span>
+                                        {% else %}
+                                            <span class="text-danger">Habis</span>
+                                        {% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4">
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'booking' paket.id %}" class="btn w-100" style="background: var(--cyan-grad); color: white; border: none;">
+                                    Sewa Sekarang
+                                </a>
+                                {% else %}
+                                <a href="{% url 'login' %}" class="btn w-100" style="background: var(--cyan-grad); color: white; border: none;">
+                                    Login untuk Sewa
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+    <!-- Image Gallery Modals -->
+    <div class="modal fade" id="imageModal1" tabindex="-1" aria-labelledby="imageModalLabel1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel1">Proyek Pabrik Tekstil</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="{% static 'images/galeri/1.jpg' %}" alt="Gallery 1" class="img-fluid">
+                    <p class="mt-3">Instalasi pencahayaan industrial di pabrik tekstil</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="imageModal2" tabindex="-1" aria-labelledby="imageModalLabel2" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel2">Gudang Distribusi</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="{% static 'images/galeri/2.jpg' %}" alt="Gallery 2" class="img-fluid">
+                    <p class="mt-3">Sistem pencahayaan otomatis di gudang distribusi</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="imageModal3" tabindex="-1" aria-labelledby="imageModalLabel3" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel3">Showroom Otomotif</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img src="{% static 'images/galeri/3.jpg' %}" alt="Gallery 3" class="img-fluid">
+                    <p class="mt-3">Pencahayaan showcase produk di showroom otomotif</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({behavior: 'smooth'});
+        }
+    </script>
+</body>
+</html>

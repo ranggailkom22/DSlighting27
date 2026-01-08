@@ -1,0 +1,211 @@
+{% extends "admin/index.html" %}
+{% load static humanize %}
+
+{% block extrahead %}
+{{ block.super }}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    // Initialize charts
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        const months = JSON.parse(document.getElementById('revenueChart').dataset.months);
+        const revenues = JSON.parse(document.getElementById('revenueChart').dataset.revenues);
+
+        // Modern Gradient for Chart
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(34, 211, 238, 0.3)');
+        gradient.addColorStop(1, 'rgba(34, 211, 238, 0)');
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: revenues,
+                    borderColor: '#0891b2',
+                    backgroundColor: gradient,
+                    borderWidth: 4,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#0891b2',
+                    pointRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        ticks: { callback: v => 'Rp ' + v.toLocaleString() }
+                    }
+                }
+            }
+        });
+    });
+
+    // Handle expired orders check
+    document.getElementById('checkExpiredOrders').addEventListener('click', function() {
+        const button = this;
+        const originalText = button.innerHTML;
+        
+        // Show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing...';
+        
+        // Get CSRF token from the hidden input
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        // Make AJAX request to trigger cleanup
+        fetch('/admin/check-expired-orders/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Show result
+            alert(`Successfully cancelled ${data.cancelled_count} expired orders.`);
+            button.disabled = false;
+            button.innerHTML = originalText;
+            
+            // Reload page to update stats
+            location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error occurred while checking expired orders.');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
+    });
+</script>
+</body>
+</html>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid" id="content-main">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-tachometer-alt me-2"></i>Quick Actions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-3">
+                        <a href="{% url 'admin:core_penyewaan_changelist' %}" class="btn btn-info">
+                            <i class="fas fa-calendar-check me-1"></i> Kelola Penyewaan
+                        </a>
+                        <a href="{% url 'admin:core_transaksi_changelist' %}" class="btn btn-success">
+                            <i class="fas fa-money-bill-wave me-1"></i> Verifikasi Pembayaran
+                        </a>
+                        <a href="{% url 'admin:core_pelanggan_changelist' %}" class="btn btn-warning">
+                            <i class="fas fa-users me-1"></i> Data Pelanggan
+                        </a>
+                        <a href="{% url 'admin:core_paket_changelist' %}" class="btn btn-secondary">
+                            <i class="fas fa-box-open me-1"></i> Kelola Paket
+                        </a>
+                        <button class="btn btn-danger" id="checkExpiredOrders">
+                            <i class="fas fa-clock me-1"></i> Check Expired Orders
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        {% comment %} <div class="col-lg-3 col-6 mb-3">
+            <div class="card stat-card card-red text-white">
+                <div class="card-body">
+                    <h5>Total Pelanggan</h5>
+                    <h2>{{ total_pelanggan|intcomma }}</h2>
+                    <small><i class="fas fa-users"></i> Aktif terdaftar</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6 mb-3">
+            <div class="card stat-card card-cyan text-white">
+                <div class="card-body">
+                    <h5>Total Paket</h5>
+                    <h2>{{ total_paket }}</h2>
+                    <small><i class="fas fa-box"></i> Koleksi lighting</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6 mb-3">
+            <div class="card stat-card card-gold text-white">
+                <div class="card-body">
+                    <h5>Penyewaan Selesai</h5>
+                    <h2>{{ total_penyewaan_sukses }}</h2>
+                    <small><i class="fas fa-check-circle"></i> Transaksi berhasil</small>
+                </div>
+            </div>
+        </div> {% endcomment %}
+        <div class="col-lg-3 col-6 mb-3">
+            <div class="card stat-card card-dark text-white">
+                <div class="card-body">
+                    <h5 class="text-warning">Total Pendapatan</h5>
+                    <h2 class="text-warning">Rp {{ total_pendapatan|floatformat:0|intcomma }}</h2>
+                    <small class="text-muted">Akumulasi laba kotor</small>
+                </div>
+            </div>
+        </div>
+        {% comment %} <div class="col-lg-3 col-6 mb-3">
+            <div class="card stat-card card-red text-white">
+                <div class="card-body">
+                    <h5>Verifikasi Pembayaran</h5>
+                    <h2>{{ transactions_needing_verification }}</h2>
+                    <small><i class="fas fa-file-invoice-dollar"></i> Butuh verifikasi</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-6 mb-3">
+            <div class="card stat-card card-cyan text-white">
+                <div class="card-body">
+                    <h5>Pesanan Perlu Diproses</h5>
+                    <h2>{{ orders_needing_processing }}</h2>
+                    <small><i class="fas fa-calendar-plus"></i> Status pending</small>
+                </div>
+            </div>
+        </div> {% endcomment %}
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 mb-4">
+            <div class="chart-box">
+                <h5 class="mb-4 font-weight-bold">Tren Pendapatan (6 Bulan Terakhir)</h5>
+                <div style="height: 350px;">
+                    <canvas id="revenueChart" 
+                        data-months="{{ months_json }}" 
+                        data-revenues="{{ revenues_json }}"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="chart-box h-100">
+                <h5 class="mb-4 font-weight-bold">3 Paket Terpopuler</h5>
+                {% for package in top_packages %}
+                <div class="package-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong class="d-block text-dark">{{ package.nama }}</strong>
+                            <small class="text-muted">Disewa {{ package.rental_count }}x</small>
+                        </div>
+                        <span class="badge badge-pill badge-info">Hot</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-5">Belum ada data persewaan.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
