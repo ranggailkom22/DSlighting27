@@ -356,28 +356,29 @@
                                             <td>
                                                 {% if transaksi_dict|get_item:penyewaan.id %}
                                                     {% with transaksi=transaksi_dict|get_item:penyewaan.id %}
-                                                        {% if transaksi.bukti_bayar %}
+                                                        {# Combined status logic: Penyewaan + Transaksi #}
+                                                        {% if penyewaan.status == 'pending' %}
                                                             {% if transaksi.status == 'paid' %}
-                                                                <span class="status-badge status-menunggu-verifikasi">Menunggu Verifikasi</span>
-                                                            {% elif transaksi.status == 'confirmed' %}
-                                                                <span class="status-badge status-lunas">Lunas</span>
+                                                                <span class="status-badge status-menunggu-verifikasi">Menunggu Konfirmasi Admin</span>
+                                                            {% elif transaksi.status == 'verified' %}
+                                                                <span class="status-badge status-lunas">Pembayaran Diterima</span>
                                                             {% elif transaksi.status == 'failed' %}
-                                                                <span class="status-badge status-gagal">Gagal</span>
+                                                                <span class="status-badge status-gagal">Bukti Ditolak - Upload Ulang</span>
+                                                            {% else %}
+                                                                <span class="status-badge status-belum-bayar">Menunggu Pembayaran</span>
                                                             {% endif %}
+                                                        {% elif penyewaan.status == 'confirmed' %}
+                                                            <span class="status-badge status-dikonfirmasi">Dikonfirmasi</span>
+                                                        {% elif penyewaan.status == 'cancelled' %}
+                                                            <span class="status-badge status-gagal">Dibatalkan</span>
+                                                        {% elif penyewaan.status == 'completed' %}
+                                                            <span class="status-badge status-selesai">Selesai</span>
                                                         {% else %}
-                                                            <span class="status-badge status-belum-bayar">Belum Bayar</span>
+                                                            <span class="status-badge bg-secondary">{{ penyewaan.get_status_display }}</span>
                                                         {% endif %}
                                                     {% endwith %}
                                                 {% else %}
-                                                    {% if penyewaan.status == 'pending' %}
-                                                        <span class="status-badge status-pending">Pending</span>
-                                                    {% elif penyewaan.status == 'confirmed' %}
-                                                        <span class="status-badge status-dikonfirmasi">Dikonfirmasi</span>
-                                                    {% elif penyewaan.status == 'completed' %}
-                                                        <span class="status-badge status-selesai">Selesai</span>
-                                                    {% else %}
-                                                        <span class="status-badge bg-secondary">{{ penyewaan.get_status_display }}</span>
-                                                    {% endif %}
+                                                    <span class="status-badge status-belum-bayar">Tidak Ada Transaksi</span>
                                                 {% endif %}
                                             </td>
                                             <td>

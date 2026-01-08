@@ -116,8 +116,9 @@ class DetailPenyewaan(models.Model):
 class Transaksi(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('paid', 'Dibayar'),
-        ('failed', 'Gagal'),
+        ('paid', 'Menunggu Verifikasi'),
+        ('verified', 'Diterima'),
+        ('failed', 'Ditolak'),
     ]
     
     penyewaan = models.ForeignKey(Penyewaan, on_delete=models.CASCADE)

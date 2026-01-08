@@ -39,13 +39,13 @@ def create_payment_notification(sender, instance, **kwargs):
             old_instance = Transaksi.objects.get(pk=instance.pk)
             # If status has changed
             if old_instance.status != instance.status:
-                if instance.status == 'confirmed':
+                if instance.status == 'verified':  # Changed from 'confirmed' to 'verified'
                     # Payment verified
                     Notifikasi.objects.create(
                         user=instance.penyewaan.pelanggan.user,
                         jenis='success',
-                        judul='Pembayaran Diverifikasi',
-                        pesan='Pembayaran Anda telah diverifikasi!'
+                        judul='Pembayaran Diterima',
+                        pesan=f'Pembayaran untuk pesanan #{instance.penyewaan.id} telah diverifikasi. Pesanan Anda kini dikonfirmasi.'
                     )
                 elif instance.status == 'failed':
                     # Payment rejected

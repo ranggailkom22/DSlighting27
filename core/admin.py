@@ -143,6 +143,7 @@ class PenyewaanAdmin(ActionMixin, admin.ModelAdmin):
     list_per_page = 20
     readonly_fields = ['total_harga', 'tanggal_dibuat']
     inlines = [DetailPenyewaanInline, TransaksiInline]
+    actions = ['konfirmasi_pembayaran_masal']
 
     def save_model(self, request, obj, form, change):
         """
@@ -215,16 +216,22 @@ class PenyewaanAdmin(ActionMixin, admin.ModelAdmin):
     status_badge.short_description = 'Status'
 
     def status_pembayaran(self, obj):
-        total_bayar = obj.transaksi_set.filter(status='paid').aggregate(
-            total=Sum('jumlah_bayar')
-        )['total'] or 0
+        """Display payment status based on Transaksi status"""
+        transaksi = obj.transaksi_set.first()
         
-        if total_bayar >= obj.total_harga:
-            return format_html('<span class="badge badge-success">Lunas</span>')
-        elif total_bayar > 0:
-            return format_html('<span class="badge badge-warning">Sebagian</span>')
-        else:
+        if not transaksi:
+            return format_html('<span class="badge badge-secondary">Tidak Ada Transaksi</span>')
+        
+        if transaksi.status == 'verified':
+            return format_html('<span class="badge badge-success">Lunas (Verified)</span>')
+        elif transaksi.status == 'paid':
+            return format_html('<span class="badge badge-info">Menunggu Verifikasi</span>')
+        elif transaksi.status == 'pending':
             return format_html('<span class="badge badge-danger">Belum Bayar</span>')
+        elif transaksi.status == 'failed':
+            return format_html('<span class="badge badge-warning">Ditolak</span>')
+        else:
+            return format_html('<span class="badge badge-secondary">{}</span>', transaksi.get_status_display())
     status_pembayaran.short_description = 'Pembayaran'
 
     def whatsapp_button(self, obj):
@@ -252,6 +259,61 @@ class PenyewaanAdmin(ActionMixin, admin.ModelAdmin):
     def aksi(self, obj):
         return self.get_action_column(obj, 'core', 'penyewaan')
     aksi.short_description = 'Aksi'
+
+    @admin.action(description="✅ Konfirmasi Pembayaran (Verify Payment)")
+    def konfirmasi_pembayaran_masal(self, request, queryset):
+        """
+        Admin action to verify payment and update order status atomically
+        Only processes orders with status='pending' and transaction status='paid'
+        """
+        from django.db import transaction as db_transaction
+        
+        verified_count = 0
+        skipped_count = 0
+        
+        for penyewaan in queryset:
+            # Only process pending orders
+            if penyewaan.status == 'pending':
+                # Check if payment proof has been uploaded (status='paid')
+                transaksi = penyewaan.transaksi_set.filter(status='paid').first()
+                
+                if transaksi:
+                    try:
+                        with db_transaction.atomic():
+                            # 1. Update Transaksi status to 'verified'
+                            transaksi.status = 'verified'
+                            transaksi.save()
+                            
+                            # 2. Update Penyewaan status to 'confirmed'
+                            penyewaan.status = 'confirmed'
+                            penyewaan.save()
+                            
+                            verified_count += 1
+                    except Exception as e:
+                        self.message_user(
+                            request,
+                            f'Error verifying payment for order #{penyewaan.id}: {str(e)}',
+                            messages.ERROR
+                        )
+                else:
+                    skipped_count += 1
+            else:
+                skipped_count += 1
+        
+        # Show result messages
+        if verified_count > 0:
+            self.message_user(
+                request,
+                f'✅ Berhasil memverifikasi {verified_count} pembayaran.',
+                messages.SUCCESS
+            )
+        
+        if skipped_count > 0:
+            self.message_user(
+                request,
+                f'⚠️ {skipped_count} pesanan dilewati (tidak ada bukti bayar atau status bukan pending).',
+                messages.WARNING
+            )
 
 
 class DetailPenyewaanAdmin(ActionMixin, admin.ModelAdmin):
